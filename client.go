@@ -6,12 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/max-messenger/max-bot-api-client-go/schemes"
 )
 
 var (
@@ -145,4 +142,64 @@ func (cl *client) Close() error {
 	}
 
 	return nil
+}
+
+
+// parseMAXErrorPayload tries to extract a human-friendly message and extra details from MAX API error body.
+// It is intentionally defensive: MAX may return different shapes depending on the endpoint.
+func parseMAXErrorPayload(raw []byte) (message string, details string) {
+	b := bytes.TrimSpace(raw)
+	if len(b) == 0 {
+		return "", ""
+	}
+
+	var v any
+	if err := json.Unmarshal(b, &v); err != nil {
+		// not JSON — plain text
+		return strings.TrimSpace(string(b)), ""
+	}
+
+	m, ok := v.(map[string]any)
+	if !ok {
+		// array or something else — return compact JSON as details
+		j, _ := json.Marshal(v)
+		return "", strings.TrimSpace(string(j))
+	}
+
+	// Common fields
+	if s, ok := m["message"].(string); ok {
+		message = strings.TrimSpace(s)
+	}
+	if message == "" {
+		if s, ok := m["error"].(string); ok {
+			message = strings.TrimSpace(s)
+		}
+	}
+	if message == "" {
+		if s, ok := m["code"].(string); ok {
+			message = strings.TrimSpace(s)
+		}
+	}
+
+	// Optional details / validation errors
+	var parts []string
+	if s, ok := m["details"].(string); ok && strings.TrimSpace(s) != "" {
+		parts = append(parts, "details="+strings.TrimSpace(s))
+	}
+	if errs, ok := m["errors"]; ok && errs != nil {
+		j, _ := json.Marshal(errs)
+		s := strings.TrimSpace(string(j))
+		if s != "" {
+			parts = append(parts, "errors="+s)
+		}
+	}
+	if len(parts) > 0 {
+		details = strings.Join(parts, "; ")
+	} else {
+		// If no known keys — keep whole object, it helps debugging.
+		j, _ := json.Marshal(m)
+		details = strings.TrimSpace(string(j))
+	}
+
+	return message, details
 }
