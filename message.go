@@ -42,23 +42,38 @@ func (m *Message) SetNotify(notify bool) *Message {
 	return m
 }
 
-func (m *Message) SetReply(text, id string) *Message {
-	m.message.Text = text
-	m.message.Link = &schemes.NewMessageLink{Type: schemes.REPLY, Mid: id}
+func (m *Message) SetMessageLink(link *schemes.NewMessageLink) *Message {
+	m.message.Link = link
 	return m
 }
 
-func (m *Message) Reply(text string, reply schemes.Message) *Message {
-	m.message.Text = text
-	if reply.Recipient.UserId != 0 {
-		m.userID = reply.Recipient.UserId
-	}
-	if reply.Recipient.ChatId != 0 {
-		m.chatID = reply.Recipient.ChatId
-	}
-	m.message.Link = &schemes.NewMessageLink{Type: schemes.REPLY, Mid: reply.Body.Mid}
-	return m
+func (m *Message) SetReply(replyMid string) *Message {
+	newReply := &schemes.NewMessageLink{Type: schemes.REPLY, Mid: replyMid}
+	return m.SetMessageLink(newReply)
 }
+
+func (m *Message) SetForward(forwardMid string) *Message {
+	newForward := &schemes.NewMessageLink{Type: schemes.FORWARD, Mid: forwardMid}
+	return m.SetMessageLink(newForward)
+}
+
+// func (m *Message) SetReply(text, id string) *Message {
+// 	m.message.Text = text
+// 	m.message.Link = &schemes.NewMessageLink{Type: schemes.REPLY, Mid: id}
+// 	return m
+// }
+
+// func (m *Message) Reply(text string, reply schemes.Message) *Message {
+// 	m.message.Text = text
+// 	if reply.Recipient.UserId != 0 {
+// 		m.userID = reply.Recipient.UserId
+// 	}
+// 	if reply.Recipient.ChatId != 0 {
+// 		m.chatID = reply.Recipient.ChatId
+// 	}
+// 	m.message.Link = &schemes.NewMessageLink{Type: schemes.REPLY, Mid: reply.Body.Mid}
+// 	return m
+// }
 
 func (m *Message) AddMarkUp(user int64, from int, len int) *Message {
 	m.message.Markups = append(m.message.Markups, schemes.MarkUp{UserId: user, From: from, Length: len, Type: schemes.MarkupUser})
