@@ -421,6 +421,7 @@ const (
 	MarkupLink          MarkupType = "link"
 	MarkupStrikethrough MarkupType = "strikethrough"
 	MarkupUnderline     MarkupType = "underline"
+	MarkupHeader        MarkupType = "heading"
 )
 
 // Paginated list of messages
