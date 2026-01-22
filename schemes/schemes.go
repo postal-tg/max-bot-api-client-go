@@ -148,12 +148,17 @@ type ChatAdminPermission string
 
 // List of ChatAdminPermission
 const (
-	READ_ALL_MESSAGES  ChatAdminPermission = "read_all_messages"
-	ADD_REMOVE_MEMBERS ChatAdminPermission = "add_remove_members"
-	ADD_ADMINS         ChatAdminPermission = "add_admins"
-	CHANGE_CHAT_INFO   ChatAdminPermission = "change_chat_info"
-	PIN_MESSAGE        ChatAdminPermission = "pin_message"
-	WRITE              ChatAdminPermission = "write"
+	READ_ALL_MESSAGES         ChatAdminPermission = "read_all_messages"
+	ADD_REMOVE_MEMBERS        ChatAdminPermission = "add_remove_members"
+	ADD_ADMINS                ChatAdminPermission = "add_admins"
+	CHANGE_CHAT_INFO          ChatAdminPermission = "change_chat_info"
+	PIN_MESSAGE               ChatAdminPermission = "pin_message"
+	WRITE                     ChatAdminPermission = "write"
+	CAN_CALL                  ChatAdminPermission = "can_call"
+	EDIT_LINK                 ChatAdminPermission = "edit_link"
+	POST_EDIT_DELETE_MESSAGES ChatAdminPermission = "post_edit_delete_message"
+	EDIT_MESSAGE              ChatAdminPermission = "edit_message"
+	DELETE_MESSAGE            ChatAdminPermission = "delete_message"
 )
 
 type ChatList struct {
