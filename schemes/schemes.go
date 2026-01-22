@@ -159,6 +159,8 @@ const (
 	POST_EDIT_DELETE_MESSAGES ChatAdminPermission = "post_edit_delete_message"
 	EDIT_MESSAGE              ChatAdminPermission = "edit_message"
 	DELETE_MESSAGE            ChatAdminPermission = "delete_message"
+	DELETE                    ChatAdminPermission = "delete"
+	EDIT                      ChatAdminPermission = "edit"
 )
 
 type ChatList struct {
