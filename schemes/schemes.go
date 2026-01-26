@@ -88,6 +88,7 @@ type BotPatch struct {
 type Button struct {
 	Type ButtonType `json:"type"`
 	Text string     `json:"text"` // Visible text of button
+	Url  *string    `json:"url"`  // Present only for `link` buttons
 }
 
 func (b Button) GetType() ButtonType {
