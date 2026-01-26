@@ -99,9 +99,14 @@ func (b Button) GetText() string {
 	return b.Text
 }
 
+func (b Button) GetUrl() *string {
+	return b.Url
+}
+
 type ButtonInterface interface {
 	GetType() ButtonType
 	GetText() string
+	GetUrl() *string
 }
 
 // Send this object when your bots wants to react to when a button is pressed
