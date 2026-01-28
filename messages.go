@@ -140,8 +140,8 @@ func (a *messages) SendWithResult(ctx context.Context, m *Message) (*schemes.Mes
 }
 
 // SendWithResultAndLinkPreview sends a message with variable link preview to a chat and returnes the created message along with any error
-func (a *messages) SendWithResultAndLinkPreview(ctx context.Context, disable_link_preview bool, m *Message) (*schemes.Message, error) {
-	return a.sendMessageWithLinkPreview(ctx, m.reset, m.chatID, m.userID, disable_link_preview, m.message)
+func (a *messages) SendWithResultAndLinkPreview(ctx context.Context, disableLinkPreview bool, m *Message) (*schemes.Message, error) {
+	return a.sendMessageWithLinkPreview(ctx, m.reset, m.chatID, m.userID, disableLinkPreview, m.message)
 }
 
 func (a *messages) sendMessage(ctx context.Context, reset bool, chatID int64, userID int64, message *schemes.NewMessageBody) (*schemes.Message, error) {
@@ -171,7 +171,7 @@ func (a *messages) sendMessage(ctx context.Context, reset bool, chatID int64, us
 	return &wrapper.Message, nil
 }
 
-func (a *messages) sendMessageWithLinkPreview(ctx context.Context, reset bool, chatID int64, userID int64, disable_link_preview bool, message *schemes.NewMessageBody) (*schemes.Message, error) {
+func (a *messages) sendMessageWithLinkPreview(ctx context.Context, reset bool, chatID int64, userID int64, disableLinkPreview bool, message *schemes.NewMessageBody) (*schemes.Message, error) {
 	wrapper := new(MessageResponse)
 	values := url.Values{}
 	if chatID != 0 {
@@ -184,7 +184,7 @@ func (a *messages) sendMessageWithLinkPreview(ctx context.Context, reset bool, c
 	if chatID == 0 && userID == 0 {
 		return nil, fmt.Errorf("No chatId and userId in sendMessageWithLinkPreview")
 	}
-	values.Set("disable_link_preview", strconv.FormatBool(disable_link_preview))
+	values.Set("disable_link_preview", strconv.FormatBool(disableLinkPreview))
 
 	body, err := a.client.request(ctx, http.MethodPost, "messages", values, reset, message)
 	if err != nil {
