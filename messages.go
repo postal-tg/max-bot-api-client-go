@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -138,6 +139,11 @@ func (a *messages) SendWithResult(ctx context.Context, m *Message) (*schemes.Mes
 	return a.sendMessage(ctx, m.reset, m.chatID, m.userID, m.message)
 }
 
+// SendWithResultAndLinkPreview sends a message with variable link preview to a chat and returnes the created message along with any error
+func (a *messages) SendWithResultAndLinkPreview(ctx context.Context, disable_link_preview bool, m *Message) (*schemes.Message, error) {
+	return a.sendMessageWithLinkPreview(ctx, m.reset, m.chatID, m.userID, disable_link_preview, m.message)
+}
+
 func (a *messages) sendMessage(ctx context.Context, reset bool, chatID int64, userID int64, message *schemes.NewMessageBody) (*schemes.Message, error) {
 	wrapper := new(MessageResponse)
 	values := url.Values{}
@@ -147,6 +153,38 @@ func (a *messages) sendMessage(ctx context.Context, reset bool, chatID int64, us
 	if userID != 0 {
 		values.Set("user_id", strconv.Itoa(int(userID)))
 	}
+
+	body, err := a.client.request(ctx, http.MethodPost, "messages", values, reset, message)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}()
+
+	if err := json.NewDecoder(body).Decode(wrapper); err != nil {
+		return nil, err
+	}
+
+	return &wrapper.Message, nil
+}
+
+func (a *messages) sendMessageWithLinkPreview(ctx context.Context, reset bool, chatID int64, userID int64, disable_link_preview bool, message *schemes.NewMessageBody) (*schemes.Message, error) {
+	wrapper := new(MessageResponse)
+	values := url.Values{}
+	if chatID != 0 {
+		values.Set("chat_id", strconv.Itoa(int(chatID)))
+	}
+	if userID != 0 {
+		values.Set("user_id", strconv.Itoa(int(userID)))
+	}
+
+	if chatID == 0 && userID == 0 {
+		return nil, fmt.Errorf("No chatId and userId in sendMessageWithLinkPreview")
+	}
+	values.Set("disable_link_preview", strconv.FormatBool(disable_link_preview))
 
 	body, err := a.client.request(ctx, http.MethodPost, "messages", values, reset, message)
 	if err != nil {
