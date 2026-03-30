@@ -211,3 +211,35 @@ func (a *chats) SendAction(ctx context.Context, chatID int64, action schemes.Sen
 	}()
 	return result, json.NewDecoder(body).Decode(result)
 }
+
+// PinMessage pins a message in a chat or channel.
+func (a *chats) PinMessage(ctx context.Context, chatID int64, pin *schemes.PinMessageBody) (*schemes.SimpleQueryResult, error) {
+	result := new(schemes.SimpleQueryResult)
+	values := url.Values{}
+	body, err := a.client.request(ctx, http.MethodPut, fmt.Sprintf("chats/%d/pin", chatID), values, false, pin)
+	if err != nil {
+		return result, err
+	}
+	defer func() {
+		if err := body.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
+	return result, json.NewDecoder(body).Decode(result)
+}
+
+// UnpinMessage removes the pinned message in a chat or channel.
+func (a *chats) UnpinMessage(ctx context.Context, chatID int64) (*schemes.SimpleQueryResult, error) {
+	result := new(schemes.SimpleQueryResult)
+	values := url.Values{}
+	body, err := a.client.request(ctx, http.MethodDelete, fmt.Sprintf("chats/%d/pin", chatID), values, false, nil)
+	if err != nil {
+		return result, err
+	}
+	defer func() {
+		if err := body.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
+	return result, json.NewDecoder(body).Decode(result)
+}
