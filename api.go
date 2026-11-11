@@ -222,7 +222,8 @@ func (a *Api) processMessageAttachments(update schemes.UpdateInterface) error {
 			}
 
 			u.Message.Body.Attachments = append(u.Message.Body.Attachments, attachments...)
-		} else if u.Message.Link != nil && u.Message.Link.Message.RawAttachments != nil {
+		}
+		if u.Message.Link != nil && u.Message.Link.Message.RawAttachments != nil {
 			attachments, err := a.convertRawAttachments(u.Message.Link.Message.RawAttachments)
 			if err != nil {
 				return err
@@ -238,7 +239,8 @@ func (a *Api) processMessageAttachments(update schemes.UpdateInterface) error {
 			}
 
 			u.Message.Body.Attachments = append(u.Message.Body.Attachments, attachments...)
-		} else if u.Message.Link != nil && u.Message.Link.Message.RawAttachments != nil {
+		}
+		if u.Message.Link != nil && u.Message.Link.Message.RawAttachments != nil {
 			attachments, err := a.convertRawAttachments(u.Message.Link.Message.RawAttachments)
 			if err != nil {
 				return err
@@ -457,6 +459,7 @@ func (a *Api) GetHandler(updates chan<- schemes.UpdateInterface) http.HandlerFun
 
 		update, err := a.bytesToProperUpdate(body)
 		if err != nil {
+			logUpdateDecodeError(body, err)
 			http.Error(w, "Failed to parse update", http.StatusBadRequest)
 			return
 		}
@@ -468,4 +471,30 @@ func (a *Api) GetHandler(updates chan<- schemes.UpdateInterface) http.HandlerFun
 			http.Error(w, "Updates channel is full", http.StatusServiceUnavailable)
 		}
 	}
+}
+
+func logUpdateDecodeError(body []byte, err error) {
+	var meta struct {
+		UpdateType string `json:"update_type"`
+		Message    struct {
+			Sender struct {
+				UserID int64 `json:"user_id"`
+			} `json:"sender"`
+			Body struct {
+				Mid string `json:"mid"`
+			} `json:"body"`
+		} `json:"message"`
+		Callback struct {
+			User struct {
+				UserID int64 `json:"user_id"`
+			} `json:"user"`
+		} `json:"callback"`
+	}
+	_ = json.Unmarshal(body, &meta)
+	userID := meta.Message.Sender.UserID
+	if meta.Callback.User.UserID != 0 {
+		userID = meta.Callback.User.UserID
+	}
+	log.Printf("Failed to parse MAX webhook: update_type=%q user_id=%d message_id=%q: %v",
+		meta.UpdateType, userID, meta.Message.Body.Mid, err)
 }
